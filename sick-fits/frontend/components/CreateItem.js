@@ -29,8 +29,8 @@ class CreateItem extends Component {
   state = {
     title: 'Nintendo Switch',
     description: 'Handheld console',
-    image: 'switch.png',
-    largeImage: 'switch-large.png',
+    image: '',
+    largeImage: '',
     price: 299
   }
 
@@ -41,7 +41,26 @@ class CreateItem extends Component {
     this.setState({
       [name]: val
     })
-  }
+  };
+
+  uploadFile = async e => {
+    console.log('uploading file...')
+    const files = e.target.files;
+    const data = new FormData();
+    data.append('file', files[0]);
+    data.append('upload_preset', 'demoapp');
+    const res = await fetch('https://api.cloudinary.com/v1_1/shahthepro/image/upload', {
+      method: 'POST',
+      body: data
+    });
+
+    const file = await res.json();
+    console.log(file);
+    this.setState({
+      image: file.secure_url,
+      largeImage: file.eager[0].secure_url
+    });
+  };
 
   render() {
     return (
@@ -57,6 +76,11 @@ class CreateItem extends Component {
         }}>
           <ErrorMessage error={error} />
           <fieldset disabled={loading} aria-busy={loading}>
+            <label htmlFor="file">
+              Image
+              <input type="file" id="title" name="file" placeholder="Upload an image" onChange={this.uploadFile} required />
+              {this.state.image && <img width="200" src={this.state.image} />}
+            </label>
             <label htmlFor="title">
               Title
               <input type="text" id="title" name="title" placeholder="Title" value={this.state.title} onChange={this.handleChange} required />
