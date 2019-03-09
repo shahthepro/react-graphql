@@ -11,6 +11,7 @@ class Item extends Component {
   static propTypes = {
     item: PropTypes.object.isRequired
   };
+
   render() {
     const { item } = this.props;
 
