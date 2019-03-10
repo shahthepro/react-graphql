@@ -88,6 +88,11 @@ const Mutation = {
 
     return user;
   },
+
+  signout(parent, args, context, info) {
+    context.response.clearCookie('token');
+    return { message: 'Session terminated' };
+  }
 };
 
 module.exports = Mutation;
