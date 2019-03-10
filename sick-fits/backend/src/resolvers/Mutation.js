@@ -45,15 +45,18 @@ const Mutation = {
       permissions: { set: ['USER'] },
     };
 
-    const user = context.db.mutation.createUser({
+    const user = await context.db.mutation.createUser({
       data
     }, info);
 
-    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
+
+    const token = jwt.sign({
+      userId: user.id,
+    }, process.env.APP_SECRET);
 
     context.response.cookie('token', token, {
       httpOnly: true,
-      maxAfe: 1000 * 60 * 60 * 24 * 30
+      maxAge: 1000 * 60 * 60 * 24 * 365,
     });
 
     return user;
