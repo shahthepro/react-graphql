@@ -106,7 +106,7 @@ const Mutation = {
 
     const promisifiedRandomBytes = promisify(randomBytes);
     const resetToken = (await promisifiedRandomBytes(20)).toString('hex');
-    const resetTokenExpiry = Date.now() * 3600000;
+    const resetTokenExpiry = Date.now() + 3600000;
 
     const res = await context.db.mutation.updateUser({
       where: { id: user.id },
