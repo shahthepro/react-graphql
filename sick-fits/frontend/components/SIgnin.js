@@ -5,17 +5,16 @@ import Form from './styles/Form';
 import ErrorMessage from './ErrorMessage';
 import { CURRENT_USER_QUERY } from './User';
 
-const SIGNUP_MUTATION = gql`
-  mutation SIGNUP_MUTATION($name: String!, $password: String!, $email: String!) {
-    signup(name: $name, email: $email, password: $password) {
+const SIGNIN_MUTATION = gql`
+  mutation SIGNIN_MUTATION($password: String!, $email: String!) {
+    signin(email: $email, password: $password) {
       id
     }
   }
 `;
 
-class Signup extends Component {
+class Signin extends Component {
   state = {
-    name: '',
     email: '',
     password: ''
   };
@@ -28,30 +27,26 @@ class Signup extends Component {
 
   render() {
     return (
-      <Mutation mutation={SIGNUP_MUTATION} variables={this.state} refetchQueries={[{ query: CURRENT_USER_QUERY }]}>
+      <Mutation mutation={SIGNIN_MUTATION} variables={this.state} refetchQueries={[{ query: CURRENT_USER_QUERY }]}>
       {
-        (signup, { error, loading }) => {
+        (signin, { error, loading }) => {
           return <Form method="post" onSubmit={async (e) => {
             e.preventDefault();
-            await signup();
-            this.setState({ name: '', email: '', password: '' })
+            await signin();
+            this.setState({ email: '', password: '' })
           }}>
             <fieldset disabled={loading} aria-busy={loading}>
-              <h2>Create an account</h2>
+              <h2>Login to existing account</h2>
               <ErrorMessage error={error} />
               <label htmlFor="email">
                 Email
                 <input type="email" name="email" id="email" placeholder="Email" value={this.state.email} onChange={this.saveToState} />
               </label>
-              <label htmlFor="name">
-                Name
-                <input type="text" name="name" id="name" placeholder="Name" value={this.state.name} onChange={this.saveToState} />
-              </label>
               <label htmlFor="password">
                 Password
                 <input type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.saveToState} />
               </label>
-              <input type="submit" value="Create"/>
+              <input type="submit" value="Sign in"/>
             </fieldset>
           </Form>
         }
@@ -61,4 +56,4 @@ class Signup extends Component {
   }
 }
 
-export default Signup;
+export default Signin;
