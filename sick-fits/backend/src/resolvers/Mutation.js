@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { randomBytes } = require('crypto');
+const { promisify } = require('util');
 
 const Mutation = {
   async createItem(parent, args, context, info) {
@@ -49,7 +51,6 @@ const Mutation = {
       data
     }, info);
 
-
     const token = jwt.sign({
       userId: user.id,
     }, process.env.APP_SECRET);
@@ -92,7 +93,64 @@ const Mutation = {
   signout(parent, args, context, info) {
     context.response.clearCookie('token');
     return { message: 'Session terminated' };
-  }
+  },
+
+  async requestReset(parent, args, context, info) {
+    const { email } = args;
+
+    const user = await context.db.query.user({ where: { email }});
+
+    if (!user) {
+      throw new Error(`Invalid email address`);
+    }
+
+    const promisifiedRandomBytes = promisify(randomBytes);
+    const resetToken = (await promisifiedRandomBytes(20)).toString('hex');
+    const resetTokenExpiry = Date.now() * 3600000;
+
+    const res = await context.db.mutation.updateUser({
+      where: { id: user.id },
+      data: { resetToken, resetTokenExpiry }
+    });
+
+    return { message: 'Reset instructions sent' };
+  },
+
+  async resetPassword(parent, args, context, info) {
+    const { resetToken, newPassword, verifyPassword } = args;
+
+    if (newPassword !== verifyPassword) {
+      throw new Error(`Password mismatch`);
+    }
+
+    const user = (await context.db.query.users({ where: {
+      resetToken,
+      resetTokenExpiry_gte: (Date.now() - 3600000)
+    }}))[0];
+
+    if (!user) {
+      throw new Error(`Invalid reset token`);
+    }
+
+    const password = await bcrypt.hash(newPassword, 10);
+
+    const updatedUser = await context.db.mutation.updateUser({
+      where: { id: user.id },
+      data: { password, resetToken: null, resetTokenExpiry: null }
+    });
+
+    const token = jwt.sign({
+      userId: user.id,
+    }, process.env.APP_SECRET);
+
+    context.response.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 365,
+    });
+
+
+    return updatedUser;
+  },
 };
 
 module.exports = Mutation;
