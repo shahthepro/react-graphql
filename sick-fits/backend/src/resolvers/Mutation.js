@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
+const { transport, makeAnEmail } = require('../mail');
 
 const Mutation = {
   async createItem(parent, args, context, info) {
@@ -108,10 +109,20 @@ const Mutation = {
     const resetToken = (await promisifiedRandomBytes(20)).toString('hex');
     const resetTokenExpiry = Date.now() + 3600000;
 
-    const res = await context.db.mutation.updateUser({
+    await context.db.mutation.updateUser({
       where: { id: user.id },
       data: { resetToken, resetTokenExpiry }
     });
+
+    const mailRes = await transport.sendMail({
+      from: 'no-reply@localhost',
+      to: user.email,
+      subject: 'Your password reset request',
+      html: makeAnEmail(`
+      <a href="${process.env.FRONTEND_URL}/reset?resetToken=${resetToken}">Click here to reset your password</a>
+      `)
+    })
+    
 
     return { message: 'Reset instructions sent' };
   },
