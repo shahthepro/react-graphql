@@ -48,4 +48,6 @@ DisplayError.propTypes = {
   error: PropTypes.object,
 };
 
-export default DisplayError;
+const ErrorMessage = DisplayError;
+
+export default ErrorMessage;

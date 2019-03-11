@@ -5,6 +5,7 @@ require('dotenv').config({ path: 'variables.env' });
 const createServer = require('./createServer');
 
 const server = createServer();
+const db = require('./db');
 
 server.express.use(cookieParser());
 
@@ -16,6 +17,22 @@ server.express.use((req, res, next) => {
     req.userId = userId;
   }
 
+  next();
+})
+
+server.express.use(async (req, res, next) => {
+  const { userId } = req;
+
+  if (!userId) {
+    return next();
+  }
+
+  const user = await db.query.user(
+    { where: { id: userId } },
+    `{ id, permissions, name, email }`
+  );
+
+  req.user = user;
   next();
 })
 
