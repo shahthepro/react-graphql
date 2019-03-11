@@ -39,8 +39,8 @@ const ALL_USERS_QUERY = gql`
 const Permissions = (props) => (
   <Query query={ALL_USERS_QUERY}>
     {
-      ({data, loading, error}) => {
-        if (loading) { return <p>Loading...</p>}
+      ({ data, loading, error }) => {
+        if (loading) { return <p>Loading...</p> }
         return (
           <div>
             <ErrorMessage error={error} />
@@ -109,20 +109,23 @@ class User extends React.Component {
       }}>
         {
           (updatePermissions, { loading, error }) => {
-            return <tr>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              {possiblePermissions.map(permission => (
-                <td key={`${user.id}-permission-col-${permission}`}>
-                  <label htmlFor={`${user.id}-permission-${permission}`}>
-                    <input type="checkbox" id={`${user.id}-permission-${permission}`} checked={this.state.permissions.includes(permission)} value={permission} onChange={this.onPermissionChange} />
-                  </label>
+            return <>
+              { error && <tr><td colSpan="8"><ErrorMessage error={error} /></td></tr> }
+              <tr>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                {possiblePermissions.map(permission => (
+                  <td key={`${user.id}-permission-col-${permission}`}>
+                    <label htmlFor={`${user.id}-permission-${permission}`}>
+                      <input type="checkbox" id={`${user.id}-permission-${permission}`} checked={this.state.permissions.includes(permission)} value={permission} onChange={this.onPermissionChange} />
+                    </label>
+                  </td>
+                ))}
+                <td>
+                  <SickButton type="button" onClick={updatePermissions} aria-disabled={loading} aria-busy={loading}>Update</SickButton>
                 </td>
-              ))}
-              <td>
-                <SickButton type="button" onClick={updatePermissions} aria-disabled={loading} aria-busy={loading}>Update</SickButton>
-              </td>
-            </tr> 
+              </tr>
+            </>
           }
         }
       </Mutation>
