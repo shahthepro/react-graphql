@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import CreateItem from '../components/CreateItem';
+import RequireSignin from '../components/RequireSignin';
 
 const Sell = props => {
   return (
     <div>
-      <CreateItem/>
+      <RequireSignin>
+        <CreateItem/>
+      </RequireSignin>
     </div>
   );
 };
