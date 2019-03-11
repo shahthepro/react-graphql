@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import ErrorMessage from './ErrorMessage';
 import Table from './styles/Table';
 import SickButton from './styles/SickButton';
+import PropTypes, { shape } from 'prop-types';
 
 const possiblePermissions = [
   'ADMIN',
@@ -60,6 +61,34 @@ const Permissions = (props) => (
 );
 
 class User extends React.Component {
+  static propTypes = {
+    user: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
+      id: PropTypes.string,
+      permissions: PropTypes.array,
+    }).isRequired,
+  };
+
+  state = {
+    permissions: this.props.user.permissions
+  }
+
+  onPermissionChange = (e) => {
+    const checkbox = e.target;
+    const permissions = [...this.state.permissions];
+
+    if (checkbox.checked) {
+      permissions.push(checkbox.value);
+    } else {
+      permissions.filter(permission => permission != checkbox.value);
+    }
+
+    this.setState({
+      permissions
+    });
+  }
+
   render() {
     const user = this.props.user;
     return (
@@ -69,11 +98,13 @@ class User extends React.Component {
         {possiblePermissions.map(permission => (
           <td key={`${user.id}-permission-col-${permission}`}>
             <label htmlFor={`${user.id}-permission-${permission}`}>
-              <input type="checkbox" id={`${user.id}-permission-${permission}`} checked={user.permissions.includes(permission)} readOnly />
+              <input type="checkbox" id={`${user.id}-permission-${permission}`} checked={this.state.permissions.includes(permission)} value={permission} onChange={this.onPermissionChange} />
             </label>
           </td>
         ))}
-        <td></td>
+        <td>
+          <SickButton>Update</SickButton>
+        </td>
       </tr>
     );
   }
