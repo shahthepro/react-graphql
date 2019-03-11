@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
 const { transport, makeAnEmail } = require('../mail');
+const { hasPermission } = require('./../utils');
 
 const Mutation = {
   async createItem(parent, args, context, info) {
@@ -171,6 +172,27 @@ const Mutation = {
 
     return updatedUser;
   },
+
+  async updatePermissions(parent, args, context, info) {
+    if (!context.request.user) {
+      throw new Error(`You must be logged in`);
+    }
+
+    const currentUser = context.request.user;
+
+    hasPermission(currentUser, ['ADMIN', 'PERMISSIONUPDATE']);
+
+    const { userId, permissions } = args;
+
+    return context.db.mutation.updateUser({
+      data: {
+        permissions: {
+          set: permissions
+        }
+      },
+      where: { id: userId }
+    }, info);
+  }
 };
 
 module.exports = Mutation;

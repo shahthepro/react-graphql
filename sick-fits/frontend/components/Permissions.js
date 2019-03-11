@@ -1,4 +1,4 @@
-import { Query } from 'react-apollo';
+import { Mutation, Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import ErrorMessage from './ErrorMessage';
 import Table from './styles/Table';
@@ -12,7 +12,18 @@ const possiblePermissions = [
   'ITEMUPDATE',
   'ITEMDELETE',
   'PERMISSIONUPDATE',
-]
+];
+
+const UPDATE_PERMISSIONS_MUTATION = gql`
+  mutation UPDATE_PERMISSIONS_MUTATION($permissions: [Permission!], $userId: ID!) {
+    updatePermissions(permissions: $permissions, userId: $userId) {
+      id
+      permissions
+      name
+      email
+    }
+  }
+`;
 
 const ALL_USERS_QUERY = gql`
   query ALL_USERS_QUERY {
@@ -92,20 +103,29 @@ class User extends React.Component {
   render() {
     const user = this.props.user;
     return (
-      <tr>
-        <td>{user.name}</td>
-        <td>{user.email}</td>
-        {possiblePermissions.map(permission => (
-          <td key={`${user.id}-permission-col-${permission}`}>
-            <label htmlFor={`${user.id}-permission-${permission}`}>
-              <input type="checkbox" id={`${user.id}-permission-${permission}`} checked={this.state.permissions.includes(permission)} value={permission} onChange={this.onPermissionChange} />
-            </label>
-          </td>
-        ))}
-        <td>
-          <SickButton>Update</SickButton>
-        </td>
-      </tr>
+      <Mutation mutation={UPDATE_PERMISSIONS_MUTATION} variables={{
+        permissions: this.state.permissions,
+        userId: user.id,
+      }}>
+        {
+          (updatePermissions, { loading, error }) => {
+            return <tr>
+              <td>{user.name}</td>
+              <td>{user.email}</td>
+              {possiblePermissions.map(permission => (
+                <td key={`${user.id}-permission-col-${permission}`}>
+                  <label htmlFor={`${user.id}-permission-${permission}`}>
+                    <input type="checkbox" id={`${user.id}-permission-${permission}`} checked={this.state.permissions.includes(permission)} value={permission} onChange={this.onPermissionChange} />
+                  </label>
+                </td>
+              ))}
+              <td>
+                <SickButton type="button" onClick={updatePermissions} aria-disabled={loading} aria-busy={loading}>Update</SickButton>
+              </td>
+            </tr> 
+          }
+        }
+      </Mutation>
     );
   }
 }
