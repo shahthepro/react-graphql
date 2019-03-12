@@ -21,6 +21,11 @@ const CartItemStyles = styled.li`
 function CartItem(props) {
   const { cartItem } = props;
 
+  if (!cartItem.item) { return <CartItemStyles>
+    Item has been deleted
+    <RemoveFromCart id={cartItem.id} />
+  </CartItemStyles> }
+
   return (
     <CartItemStyles>
       <img src={cartItem.item.image} width="100" alt={cartItem.item.title} />

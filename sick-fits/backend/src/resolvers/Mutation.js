@@ -48,12 +48,16 @@ const Mutation = {
       throw new Error(`You must be logged in!`);
     }
 
-    const item = context.db.query.item({ where }, `{id user { id }}`);
+    const item = await context.db.query.item({ where }, `{id user { id }}`);
+
+    if (!item.user) {
+      throw new Error(`Something went wrong`);
+    }
 
     const ownsItem = item.user.id === userId;
     const hasPermissions = user.permissions.some(permission => ['ADMIN', 'ITEMDELETE'].includes(permission));
 
-    if (!ownsItem && !hasPermission) {
+    if (!ownsItem && !hasPermissions) {
       throw new Error(`You do not have permission`);
     }
 
