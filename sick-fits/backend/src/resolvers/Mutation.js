@@ -240,6 +240,28 @@ const Mutation = {
       }
     }, info);
   },
+
+  async removeFromCart(parent, args, context, info) {
+    const { user } = context.request;
+
+    if (!user) {
+      throw new Error(`You must be logged in`);
+    }
+
+    const where = { id: args.id };
+
+    const existingCartItem = await context.db.query.cartItem({ where });
+
+    if (!existingCartItem) {
+      throw new Error(`Item does not exist in the cart`);
+    }
+
+    if (existingCartItem.user.id !== user.id) {
+      throw new Error(`You are not authorized to do that.`)
+    }
+
+    return context.db.mutation.deleteCartItem({ where }, info);
+  },
 };
 
 module.exports = Mutation;
