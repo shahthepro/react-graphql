@@ -35,9 +35,9 @@ const Cart = props => {
                 return <Query query={LOCAL_STATE_QUERY}>
                   {
                     ({data}) => {
-                      return <CartStyles open={data.cartOpen} onClick={toggleCart}>
+                      return <CartStyles open={data.cartOpen}>
                         <header>
-                          <CloseButton title="Close">&times;</CloseButton>
+                          <CloseButton title="Close" onClick={toggleCart}>&times;</CloseButton>
                           <Supreme>{me.name}'s Cart</Supreme>
                           <p>You have {me.cart.length} items in your cart</p>
                         </header>

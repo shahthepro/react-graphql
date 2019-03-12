@@ -250,7 +250,7 @@ const Mutation = {
 
     const where = { id: args.id };
 
-    const existingCartItem = await context.db.query.cartItem({ where });
+    const existingCartItem = await context.db.query.cartItem({ where }, `{ id user { id } }`);
 
     if (!existingCartItem) {
       throw new Error(`Item does not exist in the cart`);
