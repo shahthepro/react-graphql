@@ -205,7 +205,41 @@ const Mutation = {
       },
       where: { id: userId }
     }, info);
-  }
+  },
+
+  async addToCart(parent, args, context, info) {
+    const { user } = context.request;
+
+    if (!user) {
+      throw new Error(`You must be logged in`);
+    }
+
+    const [existingCartItem] = await context.db.query.cartItems({
+      where: {
+        user: {
+          id: user.id
+        },
+        item: {
+          id: args.id
+        }
+      }
+    });
+
+    if (existingCartItem) {
+      return context.db.mutation.updateCartItem({
+        data: { quantity: existingCartItem.quantity + 1 },
+        where: { id: existingCartItem.id },
+      }, info);
+    }
+
+    return context.db.mutation.createCartItem({
+      data: {
+        user: { connect: { id: user.id } },
+        item: { connect: { id: args.id }},
+        quantity: 1
+      }
+    }, info);
+  },
 };
 
 module.exports = Mutation;
