@@ -10,9 +10,9 @@ const Query = {
       return null;
     }
 
-    // const user = await context.db.query.user({ where: { id: context.request.userId }}, info);
+    const user = await context.db.query.user({ where: { id: context.request.userId }}, info);
 
-    return context.request.user;
+    return user;
   },
   async users(parent, args, context, info) {
     if (!context.request.userId) {
